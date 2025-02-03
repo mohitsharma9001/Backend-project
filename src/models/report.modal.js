@@ -1,3 +1,4 @@
+import mongoose, { Schema } from "mongoose";
 const reportSchema = new Schema(
     {
       reportedBy: { type: Schema.Types.ObjectId, ref: "User" },
