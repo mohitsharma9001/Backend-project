@@ -153,19 +153,19 @@ const getBlogListUserWise = asyncHandler(async (req, res) => {
     Blog.countDocuments({ owner: userId }),
   ]);
 
-  const transformBlogData = Blogs.map((blog) => {
-    const { owner, ...blogData } = blog.toObject();
-    return {
-      ...blogData,
-      fullName: owner.fullName,
-      email: owner?.email,
-      avatar: owner?.avatar,
-    };
-  });
+  // const transformBlogData = Blogs.map((blog) => {
+  //   const { owner, ...blogData } = blog.toObject();
+  //   return {
+  //     ...blogData,
+  //     fullName: owner.fullName,
+  //     email: owner?.email,
+  //     avatar: owner?.avatar,
+  //   };
+  // });
 
   return res.status(200).json({
     status: 200,
-    data: transformBlogData,
+    data: Blogs,
     totalCount: totalCount,
     message: "Blog list fetched successfully",
   });
