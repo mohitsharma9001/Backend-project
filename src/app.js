@@ -24,9 +24,11 @@ app.use(cookieParser());
 import userRouter from "./routes/user.route.js";
 import blogRouter from "./routes/blog.route.js";
 import reportRouter from "./routes/report.route.js";
+import bookmarkRouter from "./routes/bookmark.route.js";
 // routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/blog", blogRouter);
 app.use("/api/v1/report", reportRouter);
+app.use("/api/v1/bookmark", bookmarkRouter);
 
 export { app };

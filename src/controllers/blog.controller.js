@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Blog } from "../models/blog.modal.js";
 import { Category } from "../models/category.modal.js";
+import { Bookmark } from "../models/bookmark.modal.js";
 
 const createBlog = asyncHandler(async (req, res) => {
   const { title, description, category } = req.body;
@@ -11,7 +12,7 @@ const createBlog = asyncHandler(async (req, res) => {
   if ([title, description, category].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
-  
+
   let blogImageLocalPath;
 
   if (
@@ -106,26 +107,39 @@ const getBlogDetails = asyncHandler(async (req, res) => {
 
 const getAllBlogList = asyncHandler(async (req, res) => {
   const { title } = req.body;
-
+  const userId = req.user ? req.user.id : null;
   const query = {};
   if (title) {
     query.title = { $regex: title, $options: "i" };
   }
-  const [Blogs, totalCount] = await Promise.all([
+  const [blogs, totalCount] = await Promise.all([
     Blog.find(query).populate("owner", "fullName username avatar"),
     Blog.countDocuments(query),
   ]);
 
+  let updatedBlogs = blogs.map((blog) => blog.toObject());
+  if (userId) {
+    const bookmarkedBlogs = await Bookmark.find({ userId });
+    const bookmarkedIds = bookmarkedBlogs.map((bookmark) =>
+      bookmark.blogId.toString()
+    );
+
+    updatedBlogs = updatedBlogs.map((blog) => ({
+      ...blog,
+      isBookmarked: bookmarkedIds.includes(blog._id.toString()),
+    }));
+  }
+
   return res.status(200).json({
     status: 200,
-    data: Blogs,
-    totalCount: totalCount,
+    data: updatedBlogs,
+    totalCount,
     message: "Blog list fetched successfully",
   });
 });
 
 const getBlogListUserWise = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   if (!userId) {
     return res.status(401).json({
