@@ -29,7 +29,7 @@ router.route("/deleteBlog/:id").delete(verifyJWT, deleteBlog);
 router.route("/liked/:id").put(verifyJWT, likedBy);
 router.route("/commented/:id").put(verifyJWT, commentedBy);
 router.route("/updateBlog/:id").patch(verifyJWT, updateBlog);
-router.route("/blogDetails/:id").get(verifyJWT, getBlogDetails);
+router.route("/blogDetails/:id").get(getBlogDetails);
 router.route("/createCategory").post(verifyJWT, createCategory);
 router.route("/getCategoryList").get(verifyJWT, getCategoryList);
 router.route("/getBlogListByCategory/:id").get(verifyJWT, getBlogListByCategory);
