@@ -112,7 +112,7 @@ const getAllBlogList = asyncHandler(async (req, res) => {
     query.title = { $regex: title, $options: "i" };
   }
   const [Blogs, totalCount] = await Promise.all([
-    Blog.find(query),
+    Blog.find(query).populate("owner", "fullName username"),
     Blog.countDocuments(query),
   ]);
 
