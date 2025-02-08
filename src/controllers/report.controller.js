@@ -38,11 +38,15 @@ const reportBlog = asyncHandler(async (req, res) => {
 
 const reportList = asyncHandler(async (req, res) => {
   const blogList = await Report.find();
-  return res.status(200).json({
-    status: 200,
-    data: blogList,
-    message: "Report list fetched successfully",
-  });
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { data: blogList },
+        "Report list fetched successfully"
+      )
+    );
 });
 
 export { reportBlog, reportList };

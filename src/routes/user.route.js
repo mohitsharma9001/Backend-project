@@ -7,7 +7,6 @@ import {
   updateAccountDetails,
   updateUserAvatar,
   getUserChannelProfile,
-  getWatchHistory,
   userList,
   followedFollowingEndpoint
 } from "../controllers/user.controller.js";
@@ -37,7 +36,6 @@ router
 router.route("/userList").get(verifyJWT, userList);
 router.route("/get-user").get(verifyJWT, getCurrentUser);
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
-router.route("/history").get(verifyJWT, getWatchHistory);
 router.route("/followedFollowingEndpoint/:id").post(verifyJWT, followedFollowingEndpoint);
 
 export default router;

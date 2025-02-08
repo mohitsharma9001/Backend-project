@@ -21,7 +21,15 @@ const toggleBookmark = asyncHandler(async (req, res) => {
 
 const getBookmarkedBlogs = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const bookmarks = await Bookmark.find({ userId }).populate("blogId");
+  const bookmarks = await Bookmark.find({ userId })
+  .populate({
+    path: "blogId",
+    populate: {
+      path: "owner", 
+      model: "User",
+      select : "fullName avatar"
+    },
+  });
   const bookmarkedBlogs = bookmarks.map((bookmark) => bookmark.blogId);
 
   res.status(200).json({
