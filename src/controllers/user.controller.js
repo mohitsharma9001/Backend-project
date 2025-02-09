@@ -5,6 +5,7 @@ import { User } from "../models/user.modal.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { Blog } from "../models/blog.modal.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -233,13 +234,21 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  const user = req.user; // Assuming `req.user` is populated by authentication middleware
+  const user = req.user;
   if (!user) {
     return res.status(404).json(new ApiResponse(404, null, "User not found"));
   }
+
+  const userId = user.id;
+  const blogs = await Blog.find({ owner: userId });
+  const transformedUserData = {
+    ...user.toObject(),
+    blogCount: blogs?.length || 0, 
+  };
+
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "User fetched successfully"));
+    .json(new ApiResponse(200, transformedUserData, "User fetched successfully"));
 });
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { fullName, email } = req.body;
@@ -363,7 +372,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 const userList = asyncHandler(async (req, res) => {
   try {
-    
     const users = await User.find({}, { password: 0 });
     res.status(200).json({
       success: true,
@@ -383,10 +391,12 @@ const followedFollowingEndpoint = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id;
   const userId = req.params.id;
   if (userId === currentUserId.toString()) {
-    return res.status(400).json({ message: "You cannot follow/unfollow yourself" });
+    return res
+      .status(400)
+      .json({ message: "You cannot follow/unfollow yourself" });
   }
-  const userToFollow = await User.findById(userId)
-  const currentUser = await User.findById(currentUserId)
+  const userToFollow = await User.findById(userId);
+  const currentUser = await User.findById(currentUserId);
   if (!userToFollow || !currentUser) {
     return res.status(404).json({ message: "User not found" });
   }
@@ -394,7 +404,7 @@ const followedFollowingEndpoint = asyncHandler(async (req, res) => {
     (f) => f.user.toString() === userId
   );
 
-  if(isFollowing){
+  if (isFollowing) {
     currentUser.following = currentUser.following.filter(
       (f) => f.user.toString() !== userId
     );
@@ -404,7 +414,7 @@ const followedFollowingEndpoint = asyncHandler(async (req, res) => {
     await currentUser.save();
     await userToFollow.save();
     return res.status(200).json({ message: "User unfollowed successfully" });
-  }else{
+  } else {
     currentUser.following.push({ user: userId });
     userToFollow.followedBy.push({ user: currentUserId });
     await currentUser.save();
@@ -412,7 +422,6 @@ const followedFollowingEndpoint = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "User followed successfully" });
   }
 });
-
 
 export {
   registerUser,
@@ -425,5 +434,5 @@ export {
   updateUserAvatar,
   getUserChannelProfile,
   followedFollowingEndpoint,
-  userList
+  userList,
 };
