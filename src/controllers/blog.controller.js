@@ -96,7 +96,7 @@ const getBlogDetails = asyncHandler(async (req, res) => {
       message: "Blog not found.",
     });
   }
-
+  blog.commentedBy.sort((a, b) => b.commentedAt - a.commentedAt);
   return res.status(200).json({
     status: 200,
     data: blog,
