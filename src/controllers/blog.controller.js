@@ -207,9 +207,7 @@ const likedBy = asyncHandler(async (req, res) => {
   const isLiked = blog.likeBy.includes(userId);
 
   if (isLiked) {
-    blog.likeBy = blog.likeBy.filter(
-      (id) => id.toString() !== userId.toString()
-    );
+    blog.likeBy = blog.likeBy.filter((id) => id.toString() !== userId.toString());
     blog.likeCount -= 1;
   } else {
     blog.likeBy.push(userId);
@@ -217,7 +215,7 @@ const likedBy = asyncHandler(async (req, res) => {
   }
 
   await blog.save();
-  req.io.emit("updateLikes", { blogId, likeCount: blog.likeBy.length });
+  req.io.emit("updateLikes", { blogId, likeCount: blog.likeBy.length, userId });
 
   res.status(200).json({
     success: true,
@@ -230,7 +228,7 @@ const commentedBy = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const blogId = req.params.id;
   const { comment } = req.body;
-  const blog = await Blog.findById(blogId);
+  const blog = await Blog.findById(blogId).populate("commentedBy.user", "fullName avatar");
 
   if (!comment) {
     res.status(400);
@@ -243,7 +241,11 @@ const commentedBy = asyncHandler(async (req, res) => {
   }
 
   const newComment = {
-    user: userId,
+    user: {
+      _id: userId,
+      fullName: req.user.fullName,
+      avatar: req.user.avatar,
+    },
     comment: comment,
     commentedAt: new Date(),
   };
