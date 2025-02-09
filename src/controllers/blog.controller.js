@@ -87,10 +87,9 @@ const getBlogDetails = asyncHandler(async (req, res) => {
     });
   }
 
-  const blog = await Blog.findById(blogId).populate(
-    "owner",
-    "-password -__v -refreshToken -watchHistory -email"
-  );
+  const blog = await Blog.findById(blogId)
+    .populate("owner", "fullName")
+    .populate("commentedBy.user", "fullName avatar");
   if (!blog) {
     return res.status(404).json({
       status: 404,
@@ -225,7 +224,7 @@ const likedBy = asyncHandler(async (req, res) => {
 });
 
 const commentedBy = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
+  const userId = req.user.id;
   const blogId = req.params.id;
   const { comment } = req.body;
   const blog = await Blog.findById(blogId);
@@ -307,7 +306,7 @@ const getBlogListByCategory = asyncHandler(async (req, res) => {
 const latestBlog = asyncHandler(async (req, res) => {
   try {
     const blogs = await Blog.find()
-      .sort({ createdAt: -1 }) 
+      .sort({ createdAt: -1 })
       .limit(5)
       .populate("owner", "fullName")
       .populate("category", "name");
