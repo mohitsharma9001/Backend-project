@@ -203,6 +203,7 @@ const likedBy = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Blog not found");
   }
+
   const isLiked = blog.likeBy.includes(userId);
 
   if (isLiked) {
@@ -214,12 +215,14 @@ const likedBy = asyncHandler(async (req, res) => {
     blog.likeBy.push(userId);
     blog.likeCount += 1;
   }
+
   await blog.save();
+  req.io.emit("updateLikes", { blogId, likeCount: blog.likeBy.length });
 
   res.status(200).json({
     success: true,
     message: isLiked ? "Blog unliked successfully" : "Blog liked successfully",
-    likeCount: blog.likeBy?.length,
+    likeCount: blog.likeBy.length,
   });
 });
 
@@ -246,8 +249,10 @@ const commentedBy = asyncHandler(async (req, res) => {
   };
 
   blog.commentedBy.push(newComment);
-
   await blog.save();
+
+  // Emit socket event
+  req.io.emit("updateComments", { blogId, comment: newComment });
 
   res.status(201).json({
     success: true,
@@ -255,6 +260,7 @@ const commentedBy = asyncHandler(async (req, res) => {
     comments: blog.commentedBy,
   });
 });
+
 
 const createCategory = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
