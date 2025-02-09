@@ -304,6 +304,20 @@ const getBlogListByCategory = asyncHandler(async (req, res) => {
   return res.status(200).json({ message: "Blogs fetched successfully", blogs });
 });
 
+const latestBlog = asyncHandler(async (req, res) => {
+  try {
+    const blogs = await Blog.find()
+      .sort({ createdAt: -1 }) 
+      .limit(5)
+      .populate("owner", "fullName")
+      .populate("category", "name");
+
+    res.status(200).json({ success: true, blogs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error", error });
+  }
+});
+
 export {
   createBlog,
   getAllBlogList,
@@ -316,5 +330,6 @@ export {
   createCategory,
   getCategoryList,
   getBlogListByCategory,
+  latestBlog,
 };
 // kafka, rabbitmq

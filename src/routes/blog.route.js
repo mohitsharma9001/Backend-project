@@ -11,7 +11,8 @@ import {
   getBlogDetails,
   createCategory,
   getCategoryList,
-  getBlogListByCategory
+  getBlogListByCategory,
+  latestBlog
 } from "../controllers/blog.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 const router = Router();
@@ -34,5 +35,6 @@ router.route("/blogDetails/:id").get(getBlogDetails);
 router.route("/createCategory").post(verifyJWT, createCategory);
 router.route("/getCategoryList").get(verifyJWT, getCategoryList);
 router.route("/getBlogListByCategory/:id").get(verifyJWT, getBlogListByCategory);
+router.route("/latest-blog").get(latestBlog);
 
 export default router;
