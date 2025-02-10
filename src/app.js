@@ -1,8 +1,13 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { createServer } from "http";
+import { createServer, Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
+import dotenv from "dotenv";
+import connectDB from "./db/index.js";
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 
@@ -26,7 +31,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.CORS_ORIGIN || "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST","PUT","PATCH","DELETE"],
   },
 });
 
@@ -34,7 +39,7 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  console.log("✅ A user connected:", socket.id);
 
   socket.on("join", (userId) => {
     onlineUsers.set(userId, socket.id);
@@ -49,7 +54,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log("❌ User disconnected:", socket.id);
     for (let [key, value] of onlineUsers.entries()) {
       if (value === socket.id) {
         onlineUsers.delete(key);
@@ -58,6 +63,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// Attach Socket.io to req
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -75,4 +81,5 @@ app.use("/api/v1/blog", blogRouter);
 app.use("/api/v1/report", reportRouter);
 app.use("/api/v1/bookmark", bookmarkRouter);
 
-export { app, server };
+
+export { app, io, server };
