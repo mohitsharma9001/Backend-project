@@ -25,7 +25,7 @@ router
     createBlog
   );
   
-router.route("/blogList").get(verifyJWT,getAllBlogList);
+router.route("/blogList").post(verifyJWT,getAllBlogList);
 router.route("/blogUserWiseList").get(verifyJWT, getBlogListUserWise);
 router.route("/deleteBlog/:id").delete(verifyJWT, deleteBlog);
 router.route("/liked/:id").put(verifyJWT, likedBy);

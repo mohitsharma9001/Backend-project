@@ -122,7 +122,7 @@ const getAllBlogList = asyncHandler(async (req, res) => {
     Blog.countDocuments(query),
   ]);
 
-  let updatedBlogs = blogs.map((blog) => blog.toObject());
+  let updatedBlogs = blogs.map((blog) => blog?.toObject());
 
   if (userId) {
     const bookmarkedBlogs = await Bookmark.find({ userId });
@@ -297,7 +297,7 @@ const createCategory = asyncHandler(async (req, res) => {
 });
 
 const getCategoryList = asyncHandler(async (req, res) => {
-  const category = await Category.find();
+  const category = await Category.find().sort({ createdAt: -1 });
   return res.status(200).json({
     status: 200,
     data: category,
