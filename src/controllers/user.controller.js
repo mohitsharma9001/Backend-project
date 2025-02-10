@@ -96,12 +96,6 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "username or email is required");
   }
 
-  // Here is an alternative of above code based on logic discussed in video:
-  // if (!(username || email)) {
-  //     throw new ApiError(400, "username or email is required")
-
-  // }
-
   const user = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -124,6 +118,13 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
+  const blogs = await Blog.find({ owner: user._id });
+  const transformedUserData = {
+    ...loggedInUser.toObject(),
+    blogCount: blogs?.length || 0, 
+  };
+
+
   const options = {
     httpOnly: true,
     secure: true,
@@ -137,7 +138,7 @@ const loginUser = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         {
-          user: loggedInUser,
+          user: transformedUserData,
           accessToken,
           refreshToken,
         },
