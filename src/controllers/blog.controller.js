@@ -105,18 +105,25 @@ const getBlogDetails = asyncHandler(async (req, res) => {
 });
 
 const getAllBlogList = asyncHandler(async (req, res) => {
-  const { title } = req.body;
+  const { title, category } = req.body;
   const userId = req.user ? req.user.id : null;
   const query = {};
+
   if (title) {
     query.title = { $regex: title, $options: "i" };
   }
+  
+  if (category && category.trim() !== "") {
+    query.category = category;
+  }
+
   const [blogs, totalCount] = await Promise.all([
     Blog.find(query).populate("owner", "fullName username avatar"),
     Blog.countDocuments(query),
   ]);
 
   let updatedBlogs = blogs.map((blog) => blog.toObject());
+
   if (userId) {
     const bookmarkedBlogs = await Bookmark.find({ userId });
     const bookmarkedIds = bookmarkedBlogs.map((bookmark) =>
