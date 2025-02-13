@@ -39,7 +39,6 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  console.log("✅ A user connected:", socket.id);
 
   socket.on("join", (userId) => {
     onlineUsers.set(userId, socket.id);
@@ -51,6 +50,10 @@ io.on("connection", (socket) => {
 
   socket.on("commentBlog", ({ blogId, comment }) => {
     io.emit("updateComments", { blogId, comment });
+  });
+
+  socket.on("bookmarkBlog", ({ blogId, comment }) => {
+    io.emit("updateBookmark", { blogId, comment });
   });
 
   socket.on("disconnect", () => {
