@@ -8,17 +8,17 @@ import { Bookmark } from "../models/bookmark.modal.js";
 const toggleBookmark = asyncHandler(async (req, res) => {
   const { blogId } = req.params;
   const userId = req.user.id;
+  // Emit socket event
+  req.io.emit("updateBookmark", { blogId, userId });
   const existingBookmark = await Bookmark.findOne({ userId, blogId });
 
   if (existingBookmark) {
     await Bookmark.deleteOne({ userId, blogId });
-    // Emit socket event
-    req.io.emit("updateBookmark", { blogId, userId });
+
     return res.status(200).json({ status: 200, message: "Bookmark removed" });
   } else {
     await Bookmark.create({ userId, blogId });
 
-    req.io.emit("updateBookmark", { blogId, userId });
     return res.status(201).json({ status: 201, message: "Bookmark added" });
   }
 });
