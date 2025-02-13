@@ -9,7 +9,6 @@ const toggleBookmark = asyncHandler(async (req, res) => {
   const { blogId } = req.params;
   const userId = req.user.id;
   const existingBookmark = await Bookmark.findOne({ userId, blogId });
-  
 
   if (existingBookmark) {
     await Bookmark.deleteOne({ userId, blogId });
@@ -34,7 +33,19 @@ const getBookmarkedBlogs = asyncHandler(async (req, res) => {
       select: "fullName avatar",
     },
   });
-  const bookmarkedBlogs = bookmarks.map((bookmark) => bookmark.blogId);
+  const validBookmarks = bookmarks.filter(
+    (bookmark) => bookmark.blogId !== null
+  );
+  const deletedBookmarks = bookmarks.filter(
+    (bookmark) => bookmark.blogId === null
+  );
+  if (deletedBookmarks.length > 0) {
+    await Bookmark.deleteMany({
+      _id: { $in: deletedBookmarks.map((b) => b._id) },
+    });
+  }
+
+  const bookmarkedBlogs = validBookmarks.map((bookmark) => bookmark.blogId);
 
   res.status(200).json({
     status: 200,

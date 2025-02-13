@@ -57,7 +57,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
     for (let [key, value] of onlineUsers.entries()) {
       if (value === socket.id) {
         onlineUsers.delete(key);
