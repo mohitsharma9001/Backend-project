@@ -33,7 +33,7 @@ router
   .route("/avatar")
   .patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
   
-router.route("/userList").get(verifyJWT, userList);
+router.route("/userList").get(userList);
 router.route("/get-user").get(verifyJWT, getCurrentUser);
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
 router.route("/followedFollowingEndpoint/:id").post(verifyJWT, followedFollowingEndpoint);
