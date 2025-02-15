@@ -4,7 +4,6 @@ import cookieParser from "cookie-parser";
 import { createServer, Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
-import connectDB from "./db/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -39,10 +38,23 @@ const io = new Server(server, {
 const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
+  console.log(`New user connected: ${socket.id}`);
+
+  // Register user with socket ID
   socket.on("join", (userId) => {
     onlineUsers.set(userId, socket.id);
+    console.log(`User ${userId} connected with socket ${socket.id}`);
   });
 
+  // Handle private messaging
+  socket.on("sendMessage", ({ senderId, receiverId, message }) => {
+    const receiverSocketId = onlineUsers.get(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("receiveMessage", { senderId, message });
+    }
+  });
+
+  // Blog interactions
   socket.on("likeBlog", ({ blogId, userId }) => {
     io.emit("updateLikes", { blogId, userId });
   });
@@ -55,30 +67,12 @@ io.on("connection", (socket) => {
     io.emit("updateBookmark", { blogId, comment });
   });
 
-  socket.on("findRoom", (id) => {
-    let result = chatRooms.filter((room) => room.id == id);
-    socket.emit("foundRoom", result[0].messages);
-  });
-
-  socket.on("newMessage", (data) => {
-    const { room_id, message, user, timestamp } = data;
-    let result = chatRooms.filter((room) => room.id == room_id);
-    const newMessage = {
-      id: generateID(),
-      text: message,
-      user,
-      time: `${timestamp.hour}:${timestamp.mins}`,
-    };
-    socket.to(result[0].name).emit("roomMessage", newMessage);
-    result[0].messages.push(newMessage);
-    socket.emit("roomsList", chatRooms);
-    socket.emit("foundRoom", result[0].messages);
-  });
-
+  // Handle disconnection
   socket.on("disconnect", () => {
     for (let [key, value] of onlineUsers.entries()) {
       if (value === socket.id) {
         onlineUsers.delete(key);
+        console.log(`User ${key} disconnected`);
       }
     }
   });
